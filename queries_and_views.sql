@@ -32,6 +32,6 @@ SELECT
 FROM centre ce
 LEFT JOIN appointment a 
   ON a.centreID = ce.centreID
- AND a.date BETWEEN DATEADD(DAY, -30, CAST(GETDATE() AS DATE)) AND CAST(GETDATE() AS DATE)
+ AND a.[date] BETWEEN DATEADD(DAY, -30, CAST(GETDATE() AS DATE)) AND CAST(GETDATE() AS DATE)
 GROUP BY ce.centreID, ce.centreName
 ORDER BY apptsLast30d DESC;
