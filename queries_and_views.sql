@@ -1,30 +1,37 @@
---creates a virtual table that displays the performance of each centre including total revenue, average revenue per appointment and the total amount of appointments within the last 30 days
---this view will be useful to management as it allows them to track individual performance at each location and rank them, they can make decisions on which locations may need some more advertising, therapies etc.
-GO
-CREATE VIEW monthlyCentrePerformance AS
-SELECT tc.centreId, tc.city AS centreLocation, SUM(a.cost) AS totalRevenue, CAST(AVG(a.cost) AS DECIMAL(10, 2)) AS averageAppointmentRevenue, COUNT(a.appointmentId) AS totalAppointments
-FROM therapyCentre tc
-LEFT JOIN appointment a ON tc.centreId = a.centreId AND a.appointmentDate BETWEEN DATEADD(DAY, -30, GETDATE()) AND GETDATE()
-GROUP BY tc.centreId, tc.city;
-GO
---selects the view and sorts in descending order, ranking the centres from highest total revenue to lowest
-SELECT * FROM monthlyCentrePerformance
-ORDER BY totalRevenue DESC;
+-- Therapies offered at each centre with available specialists
+SELECT 
+  ce.centreID,
+  ce.centreName,
+  th.therapyName,
+  s.Name AS staffSpecialist
+FROM centre ce
+LEFT JOIN therapyCentre tc ON ce.centreID = tc.centreID
+LEFT JOIN therapy th ON tc.therapyID = th.therapyID
+LEFT JOIN specialisation sp ON th.therapyID = sp.therapyID
+LEFT JOIN staff s ON sp.staffID = s.staffID AND s.centreID = ce.centreID
+WHERE s.staffID IS NOT NULL
+ORDER BY ce.centreName, th.therapyName, s.Name;
 
---lists each centre, the therapies offered at each centre as well as the staff names that specialize in the therapy at each centre
---this query will be useful for clients as it allows them to see what therapies they can book at what centres and which staff members they can book for their selected therapy
-SELECT c.centreId, c.city AS centreLocation, t.name AS therapyOffered, CONCAT(s.fName, ' ', s.lName) AS staffSpecialist
-FROM therapyCentre c
-LEFT JOIN therapyCentreTherapyType ctt ON c.centreId = ctt.centreId
-LEFT JOIN therapyType t ON ctt.typeId = t.typeId
-LEFT JOIN staffSpecialisation ss ON t.typeId = ss.typeId
-LEFT JOIN staff s ON ss.staffId = s.staffId AND c.centreId = s.centreId
-WHERE s.staffId IS NOT NULL
-ORDER BY c.city, t.name;
+-- Top clients by number of appointments
+SELECT 
+  c.clientID,
+  c.Name AS clientName,
+  c.phoneNumber,
+  c.postcode,
+  COUNT(a.appID) AS totalAppointments
+FROM client c
+LEFT JOIN appointment a ON a.clientID = c.clientID
+GROUP BY c.clientID, c.Name, c.phoneNumber, c.postcode
+ORDER BY totalAppointments DESC, clientName;
 
--- lists client names, cities, contact details and the number of appointments the client has made, the results are listed in descending order showing the client with the highest number of booked appointments at the top
--- this query will be useful to staff as it allows them to see their most valuable clients and can reach out to them through their contact details to offer them discounts, promotions or to ask for feedback
-SELECT clientID, CONCAT(fName, ' ', lName) AS clientName, city AS clientCity, contactNumber, email,
-(SELECT COUNT(*) FROM appointment WHERE appointment.clientId = client.clientId) AS Number_Of_Appointments
-FROM client
-ORDER BY Number_Of_Appointments DESC;
+-- Appointments in the last 30 days per centre
+SELECT 
+  ce.centreID,
+  ce.centreName,
+  COUNT(a.appID) AS apptsLast30d
+FROM centre ce
+LEFT JOIN appointment a 
+  ON a.centreID = ce.centreID
+ AND a.date BETWEEN DATEADD(DAY, -30, CAST(GETDATE() AS DATE)) AND CAST(GETDATE() AS DATE)
+GROUP BY ce.centreID, ce.centreName
+ORDER BY apptsLast30d DESC;
