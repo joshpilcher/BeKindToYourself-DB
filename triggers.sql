@@ -1,5 +1,5 @@
 GO
-CREATE TRIGGER after_appointment_insert
+CREATE OR ALTER TRIGGER after_appointment_insert
 ON appointment
 AFTER INSERT
 AS
@@ -11,7 +11,7 @@ BEGIN
         'Appointment for ' + c.Name +
         ' with ' + s.Name + 
         ' (' + t.therapyName + ') on ' + 
-        CONVERT(VARCHAR(10), i.date, 120) + ' ' + CONVERT(VARCHAR(8), i.time, 108) +
+        CONVERT(VARCHAR(10), i.[date], 120) + ' ' + CONVERT(VARCHAR(8), i.[time], 108) +
         ' confirmed.'
     FROM inserted i
     JOIN client  c ON c.clientID  = i.clientID
