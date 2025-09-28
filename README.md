@@ -6,7 +6,6 @@ The system models clients, staff, therapies, appointments, equipment, and messag
 ## Features
 - **Database schema**: Normalised tables with PK/FK relationships and junction tables for many-to-many mappings.  
 - **Sample data**: Seeded dataset including clients, staff, therapies, qualifications, and appointments.  
-- **ERD**: Entity-Relationship Diagram (ERD) to visualise the design.  
 - **Queries & views**:
   - Centre performance (revenue, appointments, averages)
   - Therapies offered per centre with staff specialists
