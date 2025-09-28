@@ -1,23 +1,21 @@
--- creates a trigger that generates an automatic appointment confirmation message for clients within the message table when a row is inserted into the appointment table
--- the rational behind this trigger is that BKY require automatic message alerts to be sent to clients to advise them of upcoming appointments
--- this message contains the client name, therapist name, therapy name and the date of the appointment, the datestamp field is also automatically calculated based on the time of the message generation
 GO
 CREATE TRIGGER after_appointment_insert
 ON appointment
 AFTER INSERT
 AS
 BEGIN
-    INSERT INTO message (appointmentMessage, dateStamp)
+    INSERT INTO message (appID, dateStamp, eventMessage)
     SELECT 
-        'Appointment for ' + c.fName + ' ' + c.lName +
-        ' with therapist ' + s.fName + ' ' + s.lName +
-        ' for ' + t.name + 
-        ' on ' + CONVERT(VARCHAR, i.appointmentDate, 20) +
-        ' has been confirmed.',
-        GETDATE()
+        i.appID,
+        GETDATE(),
+        'Appointment for ' + c.Name +
+        ' with ' + s.Name + 
+        ' (' + t.therapyName + ') on ' + 
+        CONVERT(VARCHAR(10), i.date, 120) + ' ' + CONVERT(VARCHAR(8), i.time, 108) +
+        ' confirmed.'
     FROM inserted i
-    JOIN client c ON i.clientId = c.clientId
-    JOIN staff s ON i.staffId = s.staffId
-    JOIN therapyType t ON i.typeId = t.typeId;  -- << fixed to typeId
+    JOIN client  c ON c.clientID  = i.clientID
+    JOIN staff   s ON s.staffID   = i.staffID
+    JOIN therapy t ON t.therapyID = i.therapyID;
 END;
 GO
