@@ -1,132 +1,114 @@
-CREATE TABLE therapyCentre (
-    centreId INT NOT NULL,
-    name VARCHAR (30) NOT NULL,
-    buildingNumber VARCHAR(5) NOT NULL,
-    street VARCHAR (50) NOT NULL,
-    city VARCHAR (25) NOT NULL,
-    state VARCHAR (3) NOT NULL,
-    postCode CHAR (4) NOT NULL,
-    contactNumber VARCHAR (12) NOT NULL UNIQUE,
-    PRIMARY KEY (centreId)
-);
-
-CREATE TABLE therapyType (
-    typeId INT PRIMARY KEY NOT NULL,
-    name VARCHAR (25) NOT NULL,
-    description VARCHAR(500)
-);
-
-CREATE TABLE therapyCentreTherapyType (
-    centreId INT,
-    typeId INT,
-    PRIMARY KEY (centreId, typeId),
-    FOREIGN KEY (centreId) REFERENCES therapyCentre(centreId),
-    FOREIGN KEY (typeId) REFERENCES therapyType(typeId)
-);
 
 CREATE TABLE client (
-    clientId INT PRIMARY KEY NOT NULL,
-    fName VARCHAR (20) NOT NULL,
-    lName VARCHAR (20) NOT NULL,
-    contactNumber VARCHAR(12) NOT NULL UNIQUE,
-    city VARCHAR (25),
-    state VARCHAR (3),
-    postCode CHAR (4),
-    email VARCHAR (25) UNIQUE
+    clientID INT PRIMARY KEY NOT NULL,
+    Name VARCHAR(50) NOT NULL,
+    phoneNumber VARCHAR(20) NOT NULL UNIQUE,
+    postcode CHAR(4)
+);
+
+CREATE TABLE centre (
+    centreID INT PRIMARY KEY NOT NULL,
+    centreName VARCHAR(50) NOT NULL,
+    phoneNumber VARCHAR(20) NOT NULL UNIQUE,
+    buildingNumber VARCHAR(5),
+    streetName VARCHAR(50),
+    suburbName VARCHAR(50),
+    postcode CHAR(4),
+    state VARCHAR(3)
+);
+
+CREATE TABLE therapy (
+    therapyID INT PRIMARY KEY NOT NULL,
+    therapyName VARCHAR(50) NOT NULL,
+    duration INT, -- minutes
+    therapyDescription VARCHAR(500)
+);
+
+CREATE TABLE equipment (
+    equipmentID INT PRIMARY KEY NOT NULL,
+    equipmentName VARCHAR(50) NOT NULL,
+    equipmentType VARCHAR(50),
+    quantity INT NOT NULL,
+    state VARCHAR(50),
+    availability BIT NOT NULL -- 0 = unavailable, 1 = available
 );
 
 CREATE TABLE staff (
-    staffId INT PRIMARY KEY NOT NULL,
-    centreId INT,
-    fName VARCHAR (20) NOT NULL,
-    lName VARCHAR (20) NOT NULL,
-    contactNumber VARCHAR(12),
-    email VARCHAR (25),
-    street VARCHAR (50),
-    city VARCHAR (25),
-    state VARCHAR (3),
-    postCode CHAR (4),
-    FOREIGN KEY (centreId) REFERENCES therapyCentre (centreId)
-);
-
-CREATE TABLE staffSpecialisation (
-    staffId INT,
-    typeId INT,
-    PRIMARY KEY (staffId, typeId),
-    FOREIGN KEY (staffId) REFERENCES staff (staffId),
-    FOREIGN KEY (typeId) REFERENCES therapyType (typeId)
+    staffID INT PRIMARY KEY NOT NULL,
+    centreID INT NOT NULL,
+    Name VARCHAR(50) NOT NULL,
+    phoneNumber VARCHAR(20),
+    email VARCHAR(50),
+    experience VARCHAR(100),
+    FOREIGN KEY (centreID) REFERENCES centre(centreID)
 );
 
 CREATE TABLE qualification (
-    qualificationId INT PRIMARY KEY NOT NULL,
-    qualificationName VARCHAR(25) NOT NULL,
-    qualificationLevel VARCHAR (25)
+    qualificationID INT PRIMARY KEY NOT NULL,
+    qualificationName VARCHAR(50) NOT NULL,
+    qualificationLevel VARCHAR(25)
+);
+
+CREATE TABLE therapyCentre (
+    therapyID INT,
+    centreID INT,
+    PRIMARY KEY (therapyID, centreID),
+    FOREIGN KEY (therapyID) REFERENCES therapy(therapyID),
+    FOREIGN KEY (centreID) REFERENCES centre(centreID)
+);
+
+CREATE TABLE specialisation (
+    staffID INT,
+    therapyID INT,
+    specialisationName VARCHAR(50),
+    PRIMARY KEY (staffID, therapyID),
+    FOREIGN KEY (staffID) REFERENCES staff(staffID),
+    FOREIGN KEY (therapyID) REFERENCES therapy(therapyID)
 );
 
 CREATE TABLE staffQualification (
-    staffId INT,
-    qualificationId INT,
-    PRIMARY KEY (staffId, qualificationId),
-    FOREIGN KEY (staffId) REFERENCES staff (staffId),
-    FOREIGN KEY (qualificationId) REFERENCES qualification (qualificationId)
+    staffID INT,
+    qualificationID INT,
+    PRIMARY KEY (staffID, qualificationID),
+    FOREIGN KEY (staffID) REFERENCES staff(staffID),
+    FOREIGN KEY (qualificationID) REFERENCES qualification(qualificationID)
 );
 
-CREATE TABLE appointment (
-    appointmentId INT NOT NULL, 
-    appointmentDate DATETIME NOT NULL,
-    typeId INT,
-    cost DECIMAL (10, 2) NOT NULL,
-    staffId INT,
-    clientId INT,
-    centreId INT,
-    PRIMARY KEY (appointmentID),
-    FOREIGN KEY (typeId) REFERENCES therapyType (typeId),
-    FOREIGN KEY (staffId) REFERENCES staff (staffId),
-    FOREIGN KEY (centreId) REFERENCES therapyCentre (centreId),
-    FOREIGN KEY (clientId) REFERENCES client (clientId)
-);
-
-CREATE TABLE message (
-    messageId INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
-    appointmentMessage VARCHAR (200) NOT NULL,
-    dateStamp DATETIME NOT NULL
-);
-
-CREATE TABLE appointmentMessage (
-    appointmentId INT,
-    messageId INT,
-    PRIMARY KEY (appointmentId, messageId),
-    FOREIGN KEY (appointmentId) REFERENCES appointment (appointmentId),
-    FOREIGN KEY (messageId) REFERENCES message (messageId)
-);
-
-CREATE TABLE equipmentType (
-    equipmentTypeId INT PRIMARY KEY NOT NULL,
-    name VARCHAR (50) NOT NULL,
-    consumable BIT NOT NULL -- 0 represents false and 1 represents true
-);
-
-CREATE TABLE therapyTypeEquipmentType (
-    typeId INT,
-    equipmentTypeId INT,
-    PRIMARY KEY (typeId, equipmentTypeId),
-    FOREIGN KEY (typeId) REFERENCES therapyType (typeId),
-    FOREIGN KEY (equipmentTypeId) REFERENCES equipmentType (equipmentTypeId)
+--
+CREATE TABLE therapyEquipment (
+    therapyID INT,
+    equipmentID INT,
+    PRIMARY KEY (therapyID, equipmentID),
+    FOREIGN KEY (therapyID) REFERENCES therapy(therapyID),
+    FOREIGN KEY (equipmentID) REFERENCES equipment(equipmentID)
 );
 
 CREATE TABLE centreEquipment (
-    centreId INT,
-    equipmentTypeId INT,
-    quantity INT,
-    availability BIT, -- 0 represents unavailable and 1 represents available
-    PRIMARY KEY (centreId, equipmentTypeId),
-    FOREIGN KEY (centreId) REFERENCES therapyCentre (centreId),
-    FOREIGN KEY (equipmentTypeId) REFERENCES equipmentType (equipmentTypeId)
+    centreID INT,
+    equipmentID INT,
+    PRIMARY KEY (centreID, equipmentID),
+    FOREIGN KEY (centreID) REFERENCES centre(centreID),
+    FOREIGN KEY (equipmentID) REFERENCES equipment(equipmentID)
 );
 
-CREATE TABLE equipmentService ( 
-    serviceId INT PRIMARY KEY NOT NULL,
-    equipmentTypeId INT,
-    serviceDate DATE NOT NULL,
-    FOREIGN KEY (equipmentTypeId) REFERENCES equipmentType (equipmentTypeId)
+CREATE TABLE appointment (
+    appID INT PRIMARY KEY NOT NULL,
+    clientID INT NOT NULL,
+    staffID INT NOT NULL,
+    centreID INT NOT NULL,
+    therapyID INT NOT NULL,
+    date DATETIME NOT NULL,
+    time TIME NOT NULL,
+    FOREIGN KEY (clientID) REFERENCES client(clientID),
+    FOREIGN KEY (staffID) REFERENCES staff(staffID),
+    FOREIGN KEY (centreID) REFERENCES centre(centreID),
+    FOREIGN KEY (therapyID) REFERENCES therapy(therapyID)
+);
+
+CREATE TABLE message (
+    messageID INT PRIMARY KEY IDENTITY(1,1),
+    appID INT NOT NULL,
+    dateStamp DATETIME NOT NULL,
+    eventMessage VARCHAR(250) NOT NULL,
+    FOREIGN KEY (appID) REFERENCES appointment(appID)
 );
