@@ -23,9 +23,6 @@ The system models clients, staff, therapies, appointments, equipment, and messag
 3. Optionally run `views_and_queries.sql` for reporting.  
 4. Trigger `after_appointment_insert` will automatically generate messages when new appointments are inserted.
 
-## ERD
-![ERD](docs/ERD.png)
-
 ## Example Output
 Example: top clients by number of appointments.  
 | clientID | clientName      | clientCity  | contactNumber | email            | Number_Of_Appointments |
