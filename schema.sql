@@ -1,4 +1,3 @@
-
 CREATE TABLE client (
     clientID INT PRIMARY KEY NOT NULL,
     Name VARCHAR(50) NOT NULL,
